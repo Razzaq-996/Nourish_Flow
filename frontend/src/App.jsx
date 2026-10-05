@@ -51,6 +51,7 @@ import AdminAssignmentsPage from './pages/admin/AdminAssignmentsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import LoadingScreen from './components/common/LoadingScreen';
+import UserProfilePage from './pages/profile/UserProfilePage';
 
 /** Root redirect: sends / to the role-appropriate dashboard */
 function RootRedirect() {
@@ -77,6 +78,7 @@ function AppRoutes() {
         <Route element={<DashboardLayout />}>
           <Route path="/donor/dashboard" element={<DonorDashboard />} />
           <Route path="/donor/donations" element={<DonationsPage />} />
+          <Route path="/donor/profile"   element={<UserProfilePage />} />
         </Route>
       </Route>
 
@@ -96,6 +98,7 @@ function AppRoutes() {
         <Route element={<DashboardLayout />}>
           <Route path="/volunteer/dashboard"   element={<VolunteerDashboard />} />
           <Route path="/volunteer/assignments" element={<VolunteerAssignmentsPage />} />
+          <Route path="/volunteer/profile"     element={<UserProfilePage />} />
         </Route>
       </Route>
 
@@ -107,6 +110,14 @@ function AppRoutes() {
           <Route path="/admin/donations"     element={<AdminDonationsPage />} />
           <Route path="/admin/requests"      element={<AdminRequestsPage />} />
           <Route path="/admin/assignments"   element={<AdminAssignmentsPage />} />
+          <Route path="/admin/profile"       element={<UserProfilePage />} />
+        </Route>
+      </Route>
+
+      {/* ─── ALL AUTHENTICATED USERS: /profile ─────────────────── */}
+      <Route element={<ProtectedRoute allowedRoles={[USER_ROLES.DONOR, USER_ROLES.ORG_ADMIN, USER_ROLES.VOLUNTEER, USER_ROLES.ADMIN]} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/profile" element={<UserProfilePage />} />
         </Route>
       </Route>
 

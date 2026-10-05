@@ -7,6 +7,7 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
 import AssignmentDetailsModal from '../../components/assignments/AssignmentDetailsModal';
 
 export default function AdminAssignmentsPage() {
@@ -84,7 +85,7 @@ export default function AdminAssignmentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="page-title">Platform Rescue Missions</h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Global monitoring of all volunteer rescue pickups, deliveries, and fulfillment status.
           </p>
         </div>
@@ -93,20 +94,20 @@ export default function AdminAssignmentsPage() {
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
       {successMsg && <Alert type="success" message={successMsg} onClose={() => setSuccessMsg(null)} />}
 
-      <div className="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="card p-3.5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search by ID (Donation, Request, Volunteer)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-9 font-mono text-xs"
+            className="form-input pl-9 text-xs sm:text-sm font-mono"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-500 hidden sm:block" />
+          <Filter size={15} className="text-slate-400 hidden sm:block shrink-0" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -124,9 +125,9 @@ export default function AdminAssignmentsPage() {
             type="button"
             onClick={fetchAssignments}
             title="Refresh"
-            className="btn-secondary px-3 py-2"
+            className="btn-secondary px-3 py-2 shrink-0"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -141,6 +142,7 @@ export default function AdminAssignmentsPage() {
             <thead>
               <tr>
                 <th>Quantity</th>
+                <th>Mission ID</th>
                 <th>Donation ID</th>
                 <th>Request ID</th>
                 <th>Volunteer ID</th>
@@ -151,35 +153,44 @@ export default function AdminAssignmentsPage() {
             </thead>
             <tbody>
               {filtered.map((a) => (
-                <tr key={a._id}>
-                  <td className="font-semibold text-slate-100">
-                    {a.quantity} {a.unit}
+                <tr key={a._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="font-bold text-slate-900 dark:text-slate-100">
+                    {a.quantity} <span className="text-xs font-normal text-slate-500 uppercase">{a.unit}</span>
                   </td>
-                  <td className="font-mono text-xs text-slate-400">...{String(a.donationId).slice(-8)}</td>
-                  <td className="font-mono text-xs text-slate-400">...{String(a.requestId).slice(-8)}</td>
-                  <td className="font-mono text-xs text-slate-300">...{String(a.volunteerUserId).slice(-8)}</td>
+                  <td>
+                    <IdChip id={a._id} prefix="MIS" />
+                  </td>
+                  <td>
+                    <IdChip id={a.donationId} prefix="DON" />
+                  </td>
+                  <td>
+                    <IdChip id={a.requestId} prefix="REQ" />
+                  </td>
+                  <td>
+                    <IdChip id={a.volunteerUserId} prefix="VOL" />
+                  </td>
                   <td>
                     <Badge variant={assignmentStatusBadge(a.status)}>{a.status}</Badge>
                   </td>
-                  <td className="text-xs text-slate-500">{formatDate(a.assignedAt || a.createdAt)}</td>
+                  <td className="text-xs text-slate-500 font-medium">{formatDate(a.assignedAt || a.createdAt)}</td>
                   <td>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => setSelectedAssignment(a)}
-                        className="btn-secondary text-xs py-1 px-2"
+                        className="btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
                       >
-                        <Eye size={13} />
+                        <Eye size={13} /> View
                       </button>
                       {a.status === ASSIGNMENT_STATUSES.DELIVERED && (
                         <button
                           type="button"
                           onClick={() => handleComplete(a._id)}
                           disabled={actionLoading === a._id}
-                          className="btn-primary text-xs py-1 px-2 bg-emerald-600 hover:bg-emerald-500"
+                          className="btn-primary text-xs py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 flex items-center gap-1"
                           title="Complete Assignment"
                         >
-                          {actionLoading === a._id ? <Spinner size={12} /> : <Award size={13} />}
+                          {actionLoading === a._id ? <Spinner size={12} /> : <><Award size={13} /> Complete</>}
                         </button>
                       )}
                       {[ASSIGNMENT_STATUSES.PENDING, ASSIGNMENT_STATUSES.ACCEPTED, ASSIGNMENT_STATUSES.PICKUP_STARTED].includes(a.status) && (
@@ -187,7 +198,7 @@ export default function AdminAssignmentsPage() {
                           type="button"
                           onClick={() => handleCancel(a._id)}
                           disabled={actionLoading === a._id}
-                          className="btn-secondary text-xs py-1 px-2 text-red-400 hover:text-red-300"
+                          className="btn-secondary text-xs py-1 px-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                           title="Cancel Mission"
                         >
                           {actionLoading === a._id ? <Spinner size={12} /> : <XCircle size={13} />}

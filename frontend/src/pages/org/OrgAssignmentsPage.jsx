@@ -8,6 +8,8 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
+import { FoodCategoryIndicator } from '../../components/common/FoodTags';
 import AssignmentFormModal from '../../components/assignments/AssignmentFormModal';
 import AssignmentDetailsModal from '../../components/assignments/AssignmentDetailsModal';
 
@@ -146,9 +148,9 @@ export default function OrgAssignmentsPage() {
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="page-title">Delivery & Logistics Assignments</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Dispatch eligible volunteers to transport matched food donations to your center and complete deliveries.
+          <h2 className="page-title">Delivery & Logistics Dispatch</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Dispatch verified volunteers to transport claimed food donations to your center and confirm receipts.
           </p>
         </div>
         <button
@@ -168,33 +170,33 @@ export default function OrgAssignmentsPage() {
 
       {/* Metrics Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span>Pending Acceptance</span>
-            <Clock size={14} className="text-amber-400" />
+            <Clock size={15} className="text-amber-500" />
           </div>
-          <p className="text-xl font-bold text-slate-100 mt-1">{loading ? '...' : pendingCount}</p>
+          <p className="text-2xl font-black font-display text-slate-900 dark:text-slate-100 mt-1">{loading ? '...' : pendingCount}</p>
         </div>
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span>In Transit</span>
-            <Truck size={14} className="text-blue-400" />
+            <Truck size={15} className="text-blue-500" />
           </div>
-          <p className="text-xl font-bold text-slate-100 mt-1">{loading ? '...' : inTransitCount}</p>
+          <p className="text-2xl font-black font-display text-slate-900 dark:text-slate-100 mt-1">{loading ? '...' : inTransitCount}</p>
         </div>
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span>Delivered (Verify)</span>
-            <Award size={14} className="text-emerald-400" />
+            <Award size={15} className="text-emerald-500" />
           </div>
-          <p className="text-xl font-bold text-slate-100 mt-1">{loading ? '...' : deliveredCount}</p>
+          <p className="text-2xl font-black font-display text-slate-900 dark:text-slate-100 mt-1">{loading ? '...' : deliveredCount}</p>
         </div>
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span>Completed</span>
-            <CheckCircle2 size={14} className="text-brand-400" />
+            <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
           </div>
-          <p className="text-xl font-bold text-slate-100 mt-1">{loading ? '...' : completedCount}</p>
+          <p className="text-2xl font-black font-display text-slate-900 dark:text-slate-100 mt-1">{loading ? '...' : completedCount}</p>
         </div>
       </div>
 
@@ -305,23 +307,23 @@ export default function OrgAssignmentsPage() {
                     const canComplete = asgn.status === ASSIGNMENT_STATUSES.DELIVERED;
 
                     return (
-                      <tr key={asgn._id}>
-                        <td className="font-semibold text-slate-100">
-                          {asgn.quantity} {asgn.unit}
+                      <tr key={asgn._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="font-bold text-slate-900 dark:text-slate-100">
+                          {asgn.quantity} <span className="text-xs font-normal text-slate-500 uppercase">{asgn.unit}</span>
                         </td>
-                        <td className="font-mono text-xs text-slate-400">
-                          ...{String(asgn.donationId).slice(-8)}
+                        <td>
+                          <IdChip id={asgn.donationId} prefix="DON" />
                         </td>
-                        <td className="font-mono text-xs text-slate-400">
-                          ...{String(asgn.requestId).slice(-8)}
+                        <td>
+                          <IdChip id={asgn.requestId} prefix="REQ" />
                         </td>
-                        <td className="font-mono text-xs text-slate-300">
-                          ...{String(asgn.volunteerUserId).slice(-8)}
+                        <td>
+                          <IdChip id={asgn.volunteerUserId} prefix="VOL" />
                         </td>
                         <td>
                           <Badge variant={assignmentStatusBadge(asgn.status)}>{asgn.status}</Badge>
                         </td>
-                        <td className="text-xs text-slate-500">
+                        <td className="text-xs text-slate-500 font-medium">
                           {formatDate(asgn.assignedAt || asgn.createdAt)}
                         </td>
                         <td>
@@ -332,7 +334,7 @@ export default function OrgAssignmentsPage() {
                               className="btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
                               title="View Mission Details"
                             >
-                              <Eye size={13} /> Details
+                              <Eye size={13} /> View
                             </button>
 
                             {canComplete && (
@@ -352,7 +354,7 @@ export default function OrgAssignmentsPage() {
                                 type="button"
                                 onClick={() => handleCancel(asgn._id)}
                                 disabled={actionLoading === asgn._id}
-                                className="btn-secondary text-xs py-1 px-2 text-red-400 hover:text-red-300"
+                                className="btn-secondary text-xs py-1 px-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                                 title="Cancel Assignment"
                               >
                                 {actionLoading === asgn._id ? <Spinner size={12} /> : <XCircle size={13} />}
@@ -373,8 +375,8 @@ export default function OrgAssignmentsPage() {
       {/* Tab 2: Allocations Ready for Assignment */}
       {activeTab === 'allocations' && (
         <div className="space-y-4">
-          <div className="p-3 bg-surface rounded-xl border border-surface-border text-xs text-slate-400">
-            These are food allocations claiming surplus food that do not yet have an active volunteer assigned. Click <strong>Dispatch Volunteer</strong> to assign a volunteer driver.
+          <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 text-xs text-blue-800 dark:text-blue-300">
+            These are active surplus allocations claimed for your requests that do not yet have a volunteer driver dispatched. Click <strong>Dispatch Volunteer</strong> to assign a mission.
           </div>
 
           {unassignedAllocations.length === 0 ? (
@@ -385,34 +387,37 @@ export default function OrgAssignmentsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {unassignedAllocations.map((alloc, idx) => (
-                <div key={idx} className="card flex flex-col justify-between p-4">
+                <div key={idx} className="card flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-200">
                   <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
-                        {alloc.foodCategory ? alloc.foodCategory.replace(/_/g, ' ') : 'Food Surplus'}
-                      </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-950/60 border border-blue-800/60 text-blue-300 font-medium">
-                        Allocation Ready
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <FoodCategoryIndicator category={alloc.foodCategory} />
+                        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                          {alloc.foodCategory ? alloc.foodCategory.replace(/_/g, ' ') : 'Food Surplus'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-semibold">
+                        Ready to Dispatch
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-slate-100">
-                      {alloc.quantity} {alloc.unit}
+                    <h3 className="text-xl font-black font-display text-slate-900 dark:text-slate-100 mt-1">
+                      {alloc.quantity} <span className="text-sm font-semibold text-slate-500 uppercase">{alloc.unit}</span>
                     </h3>
 
-                    <div className="mt-3 p-2.5 bg-surface rounded-lg border border-surface-border text-xs space-y-1 text-slate-400 font-mono">
-                      <div className="flex justify-between">
-                        <span>Donation:</span>
-                        <span className="text-slate-300">...{alloc.donationId.slice(-8)}</span>
+                    <div className="mt-3 p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/90 dark:border-slate-700/80 text-xs space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500 dark:text-slate-400">Claimed Donation:</span>
+                        <IdChip id={alloc.donationId} prefix="DON" />
                       </div>
-                      <div className="flex justify-between">
-                        <span>Request:</span>
-                        <span className="text-slate-300">...{alloc.requestId.slice(-8)}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500 dark:text-slate-400">Target Request:</span>
+                        <IdChip id={alloc.requestId} prefix="REQ" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-surface-border mt-4 flex justify-end">
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 mt-4 flex justify-end">
                     <button
                       type="button"
                       onClick={() => handleDispatchAllocation(alloc)}

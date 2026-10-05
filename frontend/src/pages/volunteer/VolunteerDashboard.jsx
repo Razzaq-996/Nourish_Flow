@@ -18,10 +18,25 @@ import StatCard from '../../components/common/StatCard';
 import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
+import IdChip from '../../components/common/IdChip';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function VolunteerDashboard() {
   const { user, refreshUser } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const tooltipStyle = {
+    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+    borderColor: isDark ? '#334155' : '#e2e8f0',
+    color: isDark ? '#f8fafc' : '#0f172a',
+    borderRadius: '0.5rem',
+    fontSize: '12px',
+    boxShadow: isDark ? '0 10px 15px -3px rgba(0,0,0,0.5)' : '0 4px 6px -1px rgba(0,0,0,0.1)',
+  };
+  const axisStroke = isDark ? '#64748b' : '#94a3b8';
+  const gridStroke = isDark ? '#1e293b' : '#e2e8f0';
+
   const [assignments, setAssignments] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -112,26 +127,37 @@ export default function VolunteerDashboard() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* Volunteer Status Banner */}
-      <div className="card bg-gradient-to-r from-amber-950/60 via-surface-card to-surface-card border-amber-800/40 p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-900/60 border border-amber-700/60 text-amber-300 text-xs font-medium mb-2">
-              <Truck size={13} /> Volunteer Responder Hub
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-white dark:to-slate-900/60 border border-amber-500/20 dark:border-amber-500/15 p-6 sm:p-7 shadow-xs">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 text-xs font-bold uppercase tracking-wider">
+                <Truck size={12} strokeWidth={2.5} /> Volunteer Responder Central
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Active Courier Fleet
+              </span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-100">Welcome, {user?.name} 🚚</h2>
-            <p className="text-slate-400 mt-1 text-sm max-w-xl">
-              You are the bridge between food surplus and families in need. Stay ready for pickup and transport missions.
+
+            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-slate-50 tracking-tight">
+              Welcome back, {user?.name}
+            </h2>
+
+            <p className="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
+              You connect food surplus with families in need. Toggle your on-duty availability below to receive new pickup and transport dispatches.
             </p>
           </div>
 
           {/* Availability Toggle */}
-          <div className="p-3 bg-surface rounded-xl border border-surface-border flex items-center gap-3 self-start sm:self-auto">
+          <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 flex items-center gap-3 self-start lg:self-auto shadow-xs">
             <div>
-              <p className="text-[11px] text-slate-500 uppercase tracking-wider">Duty Status</p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Duty Status</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-                <span className="text-xs font-semibold text-slate-200">
-                  {isAvailable ? 'Available for Missions' : 'Off-Duty (Unavailable)'}
+                <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  {isAvailable ? 'Ready for Dispatches' : 'Off-Duty (Standby)'}
                 </span>
               </div>
             </div>
@@ -204,10 +230,10 @@ export default function VolunteerDashboard() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {deliveredUnits.map(([unit, qty]) => (
-              <div key={unit} className="p-3 bg-surface rounded-lg border border-surface-border text-center">
-                <p className="text-[11px] text-slate-500 font-semibold tracking-wider uppercase">{unit}</p>
-                <p className="text-xl font-bold text-emerald-400 mt-1">{qty.toLocaleString()}</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">delivered</p>
+              <div key={unit} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 text-center">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold tracking-wider uppercase">{unit}</p>
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{qty.toLocaleString()}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">delivered</p>
               </div>
             ))}
           </div>
@@ -227,12 +253,12 @@ export default function VolunteerDashboard() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statusChartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                <XAxis dataKey="status" stroke="#94a3b8" fontSize={11} angle={-25} textAnchor="end" />
-                <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis dataKey="status" stroke={axisStroke} fontSize={11} angle={-25} textAnchor="end" />
+                <YAxis stroke={axisStroke} fontSize={11} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
-                  labelStyle={{ color: '#cbd5e1', fontWeight: 600 }}
+                  contentStyle={tooltipStyle}
+                  labelStyle={{ color: isDark ? '#cbd5e1' : '#334155', fontWeight: 600 }}
                 />
                 <Bar dataKey="count" name="Assignments" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -265,14 +291,17 @@ export default function VolunteerDashboard() {
         ) : (
           <div className="space-y-3">
             {assignments.slice(0, 5).map((a) => (
-              <div key={a._id} className="p-3 bg-surface rounded-lg border border-surface-border flex items-center justify-between text-xs">
-                <div>
-                  <span className="font-semibold text-slate-200 block">
-                    {a.quantity} {a.unit}
-                  </span>
-                  <span className="text-slate-500">
-                    Assigned {formatDate(a.assignedAt || a.createdAt)}
-                  </span>
+              <div key={a._id} className="p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/90 dark:border-slate-700/80 flex items-center justify-between text-xs hover:-translate-y-0.5 hover:shadow-card-hover transition-all">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 block">
+                      {a.quantity} {a.unit}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+                      Assigned {formatDate(a.assignedAt || a.createdAt)}
+                    </span>
+                  </div>
+                  <IdChip id={a._id} prefix="MIS" />
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={assignmentStatusBadge(a.status)}>{a.status}</Badge>

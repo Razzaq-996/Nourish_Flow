@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Filter, RefreshCw, Send, Eye, Copy } from 'lucide-react';
+import { Plus, Search, Filter, RefreshCw, Send, Eye, Clock } from 'lucide-react';
 import { listFoodRequests, openFoodRequest, cancelFoodRequest } from '../../services/foodRequestService';
 import { FOOD_REQUEST_STATUSES, FOOD_CATEGORIES } from '../../utils/constants';
 import { requestStatusBadge, formatDate, extractErrorMessage } from '../../utils/formatters';
@@ -7,6 +7,8 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
+import { FoodCategoryIndicator } from '../../components/common/FoodTags';
 import FoodRequestFormModal from '../../components/requests/FoodRequestFormModal';
 import FoodRequestDetailsModal from '../../components/requests/FoodRequestDetailsModal';
 
@@ -89,9 +91,9 @@ export default function OrgRequestsPage() {
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="page-title">Food Requests</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Post and track meals and grocery requirements for your organization or community center.
+          <h2 className="page-title">Community Food Requests</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Broadcast meal and grocery requirements for your organization and track donor fulfillment.
           </p>
         </div>
         <button
@@ -99,7 +101,7 @@ export default function OrgRequestsPage() {
           onClick={() => setIsCreateOpen(true)}
           className="btn-primary"
         >
-          <Plus size={16} /> New Request
+          <Plus size={16} /> New Food Request
         </button>
       </div>
 
@@ -107,21 +109,54 @@ export default function OrgRequestsPage() {
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
       {successMsg && <Alert type="success" message={successMsg} onClose={() => setSuccessMsg(null)} />}
 
+      {/* Category Pills Bar (Swiggy / Zomato style quick categories) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setCategoryFilter('')}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 border select-none ${
+            categoryFilter === ''
+              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
+          }`}
+        >
+          All Requests
+        </button>
+        {Object.values(FOOD_CATEGORIES).map((cat) => {
+          const isSelected = categoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategoryFilter(isSelected ? '' : cat)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 border select-none ${
+                isSelected
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
+              }`}
+            >
+              <FoodCategoryIndicator category={cat} />
+              <span>{cat.replace(/_/g, ' ')}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Filters Toolbar */}
-      <div className="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="card p-3.5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search requests by category or note..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-9"
+            className="form-input pl-9 text-xs sm:text-sm"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-500 hidden sm:block" />
+          <Filter size={15} className="text-slate-400 hidden sm:block shrink-0" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -135,26 +170,13 @@ export default function OrgRequestsPage() {
             ))}
           </select>
 
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="form-input text-xs py-2 w-auto"
-          >
-            <option value="">All Categories</option>
-            {Object.values(FOOD_CATEGORIES).map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.replace(/_/g, ' ')}
-              </option>
-            ))}
-          </select>
-
           <button
             type="button"
             onClick={fetchRequests}
-            title="Refresh"
-            className="btn-secondary px-3 py-2"
+            title="Refresh Requests"
+            className="btn-secondary px-3 py-2 shrink-0"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -167,7 +189,7 @@ export default function OrgRequestsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No food requests found"
-          description={searchTerm || statusFilter ? 'Try adjusting your filters.' : 'You haven’t posted any food requests yet.'}
+          description={searchTerm || statusFilter || categoryFilter ? 'Try adjusting your search or category filters.' : 'You haven’t posted any food requests yet.'}
           actionLabel="Create Food Request"
           onAction={() => setIsCreateOpen(true)}
         />
@@ -181,59 +203,63 @@ export default function OrgRequestsPage() {
             return (
               <div
                 key={req._id}
-                className="card flex flex-col justify-between hover:border-slate-700/80 transition-all duration-200"
+                className="card flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-200 group"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <FoodCategoryIndicator category={req.foodCategory} />
+                      <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                         {req.foodCategory?.replace(/_/g, ' ')}
                       </span>
-                      <h3 className="text-base font-bold text-slate-100 mt-0.5 line-clamp-1">
-                        {req.description || `${req.foodCategory?.replace(/_/g, ' ')} (${req.totalQuantity} ${req.unit})`}
-                      </h3>
-                      <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 font-mono">
-                        <span className="bg-surface/80 px-1.5 py-0.5 rounded border border-surface-border select-all text-slate-400">
-                          ID: {req._id}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(req._id);
-                            setSuccessMsg(`Copied Food Request ID ${req._id} to clipboard!`);
-                          }}
-                          title="Copy Food Request ID"
-                          className="hover:text-blue-300 p-0.5 transition-colors text-slate-400"
-                        >
-                          <Copy size={12} />
-                        </button>
-                      </div>
                     </div>
                     <Badge variant={requestStatusBadge(req.status)}>{req.status}</Badge>
                   </div>
 
-                  <div className="my-3 p-3 bg-surface rounded-lg border border-surface-border">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug">
+                    {req.description || `${req.foodCategory?.replace(/_/g, ' ')} required`}
+                  </h3>
+
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <IdChip id={req._id} prefix="ID" />
+                    {req.neededBy && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                        <Clock size={11} className="shrink-0 text-slate-400" />
+                        Target: {formatDate(req.neededBy)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Fulfillment Progress */}
+                  <div className="my-3 p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/90 dark:border-slate-700/80">
                     <div className="flex items-center justify-between text-xs mb-1.5">
-                      <span className="text-slate-400">Fulfillment Progress</span>
-                      <span className="font-semibold text-slate-200">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xl font-black font-display text-slate-900 dark:text-slate-100">
+                          {req.remainingQuantity}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500 uppercase">
+                          {req.unit} remaining
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-semibold text-slate-500">
                         {req.fulfilledQuantity || 0} / {req.totalQuantity} {req.unit} ({fulfilledPct}%)
                       </span>
                     </div>
-                    <div className="w-full h-2 bg-surface-muted rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                        className="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300"
                         style={{ width: `${Math.min(fulfilledPct, 100)}%` }}
                       />
                     </div>
-                    <div className="flex justify-between items-center text-[11px] text-slate-500 mt-1.5">
-                      <span>Remaining: <strong className="text-brand-300">{req.remainingQuantity} {req.unit}</strong></span>
-                      <span>Needed by: <strong className="text-red-400">{formatDate(req.neededBy)}</strong></span>
+                    <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                      <span>Total goal: <strong className="text-slate-700 dark:text-slate-300">{req.totalQuantity} {req.unit}</strong></span>
+                      <span>Needed by: <strong className="text-red-600 dark:text-red-400">{formatDate(req.neededBy)}</strong></span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-surface-border flex items-center justify-between gap-2">
-                  <span className="text-xs text-slate-500">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-slate-400 font-medium">
                     Created {formatDate(req.createdAt)}
                   </span>
 
@@ -243,7 +269,7 @@ export default function OrgRequestsPage() {
                       onClick={() => setSelectedRequest(req)}
                       className="btn-secondary text-xs py-1.5 px-2.5"
                     >
-                      <Eye size={14} /> Details
+                      <Eye size={13} /> View
                     </button>
 
                     {req.status === FOOD_REQUEST_STATUSES.DRAFT && (
@@ -253,7 +279,7 @@ export default function OrgRequestsPage() {
                         disabled={actionLoading === req._id}
                         className="btn-primary text-xs py-1.5 px-3 bg-blue-600 hover:bg-blue-500"
                       >
-                        {actionLoading === req._id ? <Spinner size={14} /> : <><Send size={14} /> Open Request</>}
+                        {actionLoading === req._id ? <Spinner size={13} /> : <><Send size={13} /> Open Request</>}
                       </button>
                     )}
 
@@ -262,9 +288,9 @@ export default function OrgRequestsPage() {
                         type="button"
                         onClick={() => handleCancel(req._id)}
                         disabled={actionLoading === req._id}
-                        className="btn-secondary text-xs py-1.5 px-2.5 text-red-400 hover:text-red-300 hover:bg-red-950/30"
+                        className="btn-secondary text-xs py-1.5 px-2.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                       >
-                        {actionLoading === req._id ? <Spinner size={14} /> : 'Cancel'}
+                        {actionLoading === req._id ? <Spinner size={13} /> : 'Cancel'}
                       </button>
                     )}
                   </div>

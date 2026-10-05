@@ -27,6 +27,8 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
+import MissionStepTracker from '../../components/assignments/MissionStepTracker';
 import AssignmentDetailsModal from '../../components/assignments/AssignmentDetailsModal';
 
 export default function VolunteerAssignmentsPage() {
@@ -88,8 +90,8 @@ export default function VolunteerAssignmentsPage() {
       {/* Top Banner */}
       <div>
         <h2 className="page-title">My Rescue Missions</h2>
-        <p className="text-sm text-slate-400 mt-1">
-          Track volunteer assignments dispatched to you. Accept runs, navigate pickup, and confirm deliveries.
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Track volunteer food rescue dispatches. Navigate pickup locations, collect surplus, and confirm delivery.
         </p>
       </div>
 
@@ -98,39 +100,45 @@ export default function VolunteerAssignmentsPage() {
 
       {/* Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border flex items-center justify-between">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
           <div>
-            <span className="text-xs text-slate-400 block">Pending Acceptance</span>
-            <span className="text-xl font-bold text-slate-100">{loading ? '...' : pendingCount}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Pending Response</span>
+            <span className="text-2xl font-black font-display text-slate-900 dark:text-slate-100">{loading ? '...' : pendingCount}</span>
           </div>
-          <Clock size={18} className="text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/80">
+            <Clock size={18} />
+          </div>
         </div>
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border flex items-center justify-between">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
           <div>
-            <span className="text-xs text-slate-400 block">In Progress</span>
-            <span className="text-xl font-bold text-slate-100">{loading ? '...' : inTransitCount}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Underway & In Transit</span>
+            <span className="text-2xl font-black font-display text-slate-900 dark:text-slate-100">{loading ? '...' : inTransitCount}</span>
           </div>
-          <Truck size={18} className="text-blue-400" />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/80">
+            <Truck size={18} />
+          </div>
         </div>
-        <div className="p-3.5 bg-surface rounded-xl border border-surface-border flex items-center justify-between">
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
           <div>
-            <span className="text-xs text-slate-400 block">Delivered & Completed</span>
-            <span className="text-xl font-bold text-slate-100">{loading ? '...' : completedCount}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Delivered & Completed</span>
+            <span className="text-2xl font-black font-display text-slate-900 dark:text-slate-100">{loading ? '...' : completedCount}</span>
           </div>
-          <Award size={18} className="text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80">
+            <Award size={18} />
+          </div>
         </div>
       </div>
 
       {/* Filter toolbar */}
-      <div className="card p-4 flex items-center justify-between gap-3">
+      <div className="card p-3.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-500" />
+          <Filter size={15} className="text-slate-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="form-input text-xs py-2 w-auto"
           >
-            <option value="">All Statuses</option>
+            <option value="">All Mission Statuses</option>
             {Object.values(ASSIGNMENT_STATUSES).map((st) => (
               <option key={st} value={st}>
                 {st.replace(/_/g, ' ')}
@@ -143,9 +151,9 @@ export default function VolunteerAssignmentsPage() {
           type="button"
           onClick={fetchAssignments}
           title="Refresh Missions"
-          className="btn-secondary px-3 py-2"
+          className="btn-secondary px-3 py-2 shrink-0"
         >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
@@ -178,31 +186,39 @@ export default function VolunteerAssignmentsPage() {
             return (
               <div
                 key={asgn._id}
-                className="card flex flex-col justify-between hover:border-slate-700/80 transition-all duration-200"
+                className="card flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-200 group"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
-                      Food Rescue Mission
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                      Rescue Mission Dispatch
                     </span>
                     <Badge variant={assignmentStatusBadge(asgn.status)}>{asgn.status}</Badge>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-100">
-                    {asgn.quantity} {asgn.unit} of surplus food
-                  </h3>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <h3 className="text-xl font-black font-display text-slate-900 dark:text-slate-100">
+                      {asgn.quantity} <span className="text-sm font-semibold text-slate-500 uppercase">{asgn.unit}</span>
+                    </h3>
+                    <IdChip id={asgn._id} prefix="MIS" />
+                  </div>
 
-                  <div className="mt-3 p-3 bg-surface rounded-lg border border-surface-border text-xs space-y-1.5">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Donation ID:</span>
-                      <span className="font-mono text-slate-300">...{String(asgn.donationId).slice(-8)}</span>
+                  {/* Swiggy/DoorDash Step Tracker */}
+                  <div className="mt-3 px-2 py-2 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+                    <MissionStepTracker status={asgn.status} />
+                  </div>
+
+                  <div className="mt-3 p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/90 dark:border-slate-700/80 text-xs space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 dark:text-slate-400">Pickup Donation:</span>
+                      <IdChip id={asgn.donationId} prefix="DON" />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Food Request ID:</span>
-                      <span className="font-mono text-slate-300">...{String(asgn.requestId).slice(-8)}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 dark:text-slate-400">Deliver To Request:</span>
+                      <IdChip id={asgn.requestId} prefix="REQ" />
                     </div>
-                    <div className="flex justify-between text-slate-500 text-[11px] pt-1 border-t border-surface-border/50">
-                      <span>Dispatched:</span>
+                    <div className="flex justify-between text-slate-400 text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60">
+                      <span>Dispatched</span>
                       <span>{formatDateTime(asgn.assignedAt || asgn.createdAt)}</span>
                     </div>
                   </div>

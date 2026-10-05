@@ -9,14 +9,15 @@ import { USER_ROLES } from '../../utils/constants';
 import { extractErrorMessage } from '../../utils/formatters';
 import Alert from '../../components/common/Alert';
 import Spinner from '../../components/common/Spinner';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import { Leaf } from 'lucide-react';
 
 const PUBLIC_ROLES = [USER_ROLES.DONOR, USER_ROLES.ORG_ADMIN, USER_ROLES.VOLUNTEER];
 
 const ROLE_LABELS = {
-  [USER_ROLES.DONOR]:     'Food Donor',
-  [USER_ROLES.ORG_ADMIN]: 'Organization Admin',
-  [USER_ROLES.VOLUNTEER]: 'Volunteer',
+  [USER_ROLES.DONOR]:     'Food Donor (Restaurant, Grocery, Individual)',
+  [USER_ROLES.ORG_ADMIN]: 'Organization Admin (Shelter, Food Bank, NGO)',
+  [USER_ROLES.VOLUNTEER]: 'Volunteer Driver / Courier',
 };
 
 export default function RegisterPage() {
@@ -57,22 +58,27 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-brand-900/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-950/40 rounded-full blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100/90 dark:bg-[#090d16] relative overflow-hidden transition-colors">
+      {/* Top right theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
       </div>
 
-      <div className="relative w-full max-w-md animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600 mb-4 shadow-lg shadow-brand-900/50">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-500/10 dark:bg-emerald-900/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-600/10 dark:bg-teal-950/30 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-md animate-fade-in z-10 py-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 dark:from-emerald-600 dark:to-emerald-800 mb-3 shadow-md shadow-emerald-900/20">
             <Leaf size={24} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-50">Create an account</h1>
-          <p className="text-slate-400 mt-1 text-sm">Join the Food Rescue Platform</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-slate-50 tracking-tight">Create an account</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">Join the Food Rescue Operations Network</p>
         </div>
 
-        <div className="card">
+        <div className="card shadow-modal border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/95 p-6 sm:p-8">
           {error   && <Alert type="error"   message={error}   onClose={() => setError('')}   className="mb-4" />}
           {success && <Alert type="success" message={success} className="mb-4" />}
 
@@ -89,12 +95,14 @@ export default function RegisterPage() {
                   onChange={set('email')} className="form-input" placeholder="you@example.com" />
               </div>
               <div>
-                <label htmlFor="reg-password" className="form-label">Password <span className="text-slate-500">(min 8 chars)</span></label>
+                <label htmlFor="reg-password" className="form-label">
+                  Password <span className="text-content-muted text-xs font-normal">(min 8 chars)</span>
+                </label>
                 <input id="reg-password" type="password" required minLength={8} value={form.password}
                   onChange={set('password')} className="form-input" placeholder="••••••••" />
               </div>
               <div>
-                <label htmlFor="reg-role" className="form-label">I am a…</label>
+                <label htmlFor="reg-role" className="form-label">Role</label>
                 <select id="reg-role" value={form.role} onChange={set('role')}
                   className="form-input">
                   {PUBLIC_ROLES.map((r) => (
@@ -104,14 +112,14 @@ export default function RegisterPage() {
               </div>
               <div>
                 <label htmlFor="reg-phone" className="form-label">
-                  Phone <span className="text-slate-500">(optional)</span>
+                  Phone <span className="text-content-muted text-xs font-normal">(optional)</span>
                 </label>
                 <input id="reg-phone" type="tel" value={form.phone}
                   onChange={set('phone')} className="form-input" placeholder="+1 555 000 0000" />
               </div>
 
               <button id="register-submit-btn" type="submit" disabled={loading}
-                className="btn-primary w-full justify-center py-2.5 mt-1">
+                className="btn-primary w-full justify-center py-2.5 mt-2">
                 {loading ? <Spinner size="sm" /> : null}
                 {loading ? 'Creating account…' : 'Create account'}
               </button>
@@ -127,9 +135,9 @@ export default function RegisterPage() {
           )}
 
           {!success && (
-            <p className="mt-5 text-center text-sm text-slate-400">
+            <p className="mt-6 text-center text-sm text-content-muted">
               Already have an account?{' '}
-              <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
+              <Link to="/login" className="text-brand-600 dark:text-brand-400 hover:underline font-semibold transition-colors">
                 Sign in
               </Link>
             </p>

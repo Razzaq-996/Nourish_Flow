@@ -36,11 +36,24 @@ import {
   YAxis,
   Tooltip
 } from 'recharts';
+import { useTheme } from '../../hooks/useTheme';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
 export default function OrgDashboard() {
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const tooltipStyle = {
+    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+    borderColor: isDark ? '#334155' : '#e2e8f0',
+    color: isDark ? '#f8fafc' : '#0f172a',
+    borderRadius: '0.5rem',
+    fontSize: '12px',
+    boxShadow: isDark ? '0 10px 15px -3px rgba(0,0,0,0.5)' : '0 4px 6px -1px rgba(0,0,0,0.1)',
+  };
+  const axisStroke = isDark ? '#64748b' : '#94a3b8';
+
   const orgId = user?.organizationId;
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,37 +121,42 @@ export default function OrgDashboard() {
       {successMsg && <Alert type="success" message={successMsg} onClose={() => setSuccessMsg(null)} />}
 
       {/* Welcome banner */}
-      <div className="card bg-gradient-to-r from-blue-950/70 via-surface-card to-surface-card border-blue-800/40 p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-900/60 border border-blue-700/60 text-blue-300 text-xs font-medium mb-2">
-              <Building2 size={13} /> Organization Operations Center
-            </div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold text-slate-100">
-                {analytics?.organization?.name || user?.name}
-              </h2>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-white dark:to-slate-900/60 border border-blue-500/20 dark:border-blue-500/15 p-6 sm:p-7 shadow-xs">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/80 border border-blue-300 dark:border-blue-700/60 text-blue-800 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <Building2 size={12} strokeWidth={2.5} /> Community Relief Hub
+              </span>
               {analytics?.organization?.verificationStatus && (
                 <Badge variant={orgStatusBadge(analytics.organization.verificationStatus)}>
                   {analytics.organization.verificationStatus}
                 </Badge>
               )}
             </div>
-            <p className="text-slate-400 mt-1 text-sm max-w-xl">
-              Coordinate food relief, monitor supply allocations, track volunteer rescue deliveries, and verify mission completion.
+
+            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-slate-50 tracking-tight">
+              {analytics?.organization?.name || user?.name}
+            </h2>
+
+            <p className="text-slate-600 dark:text-slate-300 text-sm max-w-2xl leading-relaxed">
+              Coordinate regional food relief, monitor supply allocations, track volunteer rescue deliveries, and verify mission completion.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={loadData}
-              className="btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
+              className="btn-secondary text-xs px-3.5 py-2.5 flex items-center gap-1.5 rounded-xl font-semibold"
               title="Refresh"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
-            <Link to="/org/requests" className="btn-primary text-xs flex items-center gap-1.5">
-              <Plus size={15} /> New Food Request
+            <Link to="/org/requests" className="btn-primary text-xs px-4 py-2.5 flex items-center gap-2 rounded-xl font-bold shadow-md shadow-emerald-900/10">
+              <Plus size={16} strokeWidth={2.5} /> New Food Request
             </Link>
           </div>
         </div>
@@ -202,16 +220,9 @@ export default function OrgDashboard() {
               <div className="h-60 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={requestStatusData}>
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                    <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        borderRadius: '0.5rem',
-                        fontSize: '12px'
-                      }}
-                    />
+                    <XAxis dataKey="name" stroke={axisStroke} fontSize={11} />
+                    <YAxis stroke={axisStroke} fontSize={11} allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -251,14 +262,7 @@ export default function OrgDashboard() {
                         <Cell key={`cell-org-asgn-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        borderRadius: '0.5rem',
-                        fontSize: '12px'
-                      }}
-                    />
+                    <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -283,19 +287,19 @@ export default function OrgDashboard() {
               const deliv = analytics.quantities?.deliveredByUnit?.[unit] || 0;
 
               return (
-                <div key={unit} className="p-3 bg-surface rounded-xl border border-surface-border text-xs space-y-1.5">
-                  <span className="font-bold text-slate-200 uppercase tracking-wider block">{unit}</span>
-                  <div className="flex justify-between text-[11px] text-slate-400">
+                <div key={unit} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 text-xs space-y-1.5">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">{unit}</span>
+                  <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400">
                     <span>Requested:</span>
-                    <span className="text-slate-200 font-semibold">{req}</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-semibold">{req}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-400">
+                  <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400">
                     <span>Allocated:</span>
-                    <span className="text-blue-400 font-semibold">{alloc}</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold">{alloc}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-400 pt-1 border-t border-surface-border/50">
+                  <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-700/60">
                     <span>Delivered:</span>
-                    <span className="text-emerald-400 font-bold">{deliv}</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{deliv}</span>
                   </div>
                 </div>
               );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, Eye, ArrowUpRight, Copy } from 'lucide-react';
+import { Search, Filter, RefreshCw, Eye, ArrowUpRight, MapPin } from 'lucide-react';
 import { listDonations } from '../../services/donationService';
 import { DONATION_STATUSES, FOOD_CATEGORIES } from '../../utils/constants';
 import { donationStatusBadge, formatDate, extractErrorMessage } from '../../utils/formatters';
@@ -7,6 +7,8 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
+import { FoodCategoryIndicator, ExpiryUrgencyPill } from '../../components/common/FoodTags';
 import DonationDetailsModal from '../../components/donations/DonationDetailsModal';
 import AllocateModal from '../../components/matching/AllocateModal';
 import AssignmentFormModal from '../../components/assignments/AssignmentFormModal';
@@ -61,49 +63,68 @@ export default function OrgDonationsPage() {
       {/* Top Banner */}
       <div>
         <h2 className="page-title">Available Food Surplus</h2>
-        <p className="text-sm text-slate-400 mt-1">
-          Browse food listed by donors in your community and claim allocations for your food requests.
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Browse verified surplus food offered by community donors and claim allocations for your food requests.
         </p>
       </div>
 
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
       {successMsg && <Alert type="success" message={successMsg} onClose={() => setSuccessMsg(null)} />}
 
+      {/* Category Pills Bar (Swiggy / Zomato style quick categories) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setCategoryFilter('')}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 border select-none ${
+            categoryFilter === ''
+              ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs'
+              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
+          }`}
+        >
+          All Surplus
+        </button>
+        {Object.values(FOOD_CATEGORIES).map((cat) => {
+          const isSelected = categoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategoryFilter(isSelected ? '' : cat)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 border select-none ${
+                isSelected
+                  ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
+              }`}
+            >
+              <FoodCategoryIndicator category={cat} />
+              <span>{cat.replace(/_/g, ' ')}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Toolbar */}
-      <div className="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="card p-3.5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search by category, food type, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-9"
+            className="form-input pl-9 text-xs sm:text-sm"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-500 hidden sm:block" />
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="form-input text-xs py-2 w-auto"
-          >
-            <option value="">All Categories</option>
-            {Object.values(FOOD_CATEGORIES).map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.replace(/_/g, ' ')}
-              </option>
-            ))}
-          </select>
-
           <button
             type="button"
             onClick={fetchDonations}
-            title="Refresh"
-            className="btn-secondary px-3 py-2"
+            title="Refresh Surplus Listings"
+            className="btn-secondary px-3 py-2 shrink-0"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -116,7 +137,7 @@ export default function OrgDonationsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No food donations found"
-          description="There are currently no listings matching your criteria."
+          description="There are currently no listings matching your criteria or category filter."
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -126,56 +147,59 @@ export default function OrgDonationsPage() {
             return (
               <div
                 key={donation._id}
-                className="card flex flex-col justify-between hover:border-slate-700/80 transition-all duration-200"
+                className="card flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-200 group"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
-                      {donation.foodCategory?.replace(/_/g, ' ')}
-                    </span>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <FoodCategoryIndicator category={donation.foodCategory} />
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                        {donation.foodCategory?.replace(/_/g, ' ')}
+                      </span>
+                    </div>
                     <Badge variant={donationStatusBadge(donation.status)}>{donation.status}</Badge>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-100 line-clamp-1">
-                    {donation.description || `${donation.foodCategory?.replace(/_/g, ' ')}`}
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug">
+                    {donation.description || `${donation.foodCategory?.replace(/_/g, ' ')} batch`}
                   </h3>
 
-                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 font-mono">
-                    <span className="bg-surface/80 px-1.5 py-0.5 rounded border border-surface-border select-all text-slate-400">
-                      ID: {donation._id}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(donation._id);
-                        setSuccessMsg(`Copied Donation ID ${donation._id} to clipboard!`);
-                      }}
-                      title="Copy Donation ID"
-                      className="hover:text-brand-300 p-0.5 transition-colors text-slate-400"
-                    >
-                      <Copy size={12} />
-                    </button>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <IdChip id={donation._id} prefix="ID" />
+                    {donation.pickupLocation?.addressText && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 truncate max-w-[150px]">
+                        <MapPin size={11} className="shrink-0 text-slate-400" />
+                        {donation.pickupLocation.addressText}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="mt-3 p-3 bg-surface rounded-lg border border-surface-border space-y-1.5 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Remaining Surplus:</span>
-                      <span className="font-bold text-brand-300 text-sm">{donation.remainingQuantity} {donation.unit}</span>
+                  <div className="mt-3 p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/90 dark:border-slate-700/80 space-y-2">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Available Surplus</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-black font-display text-emerald-700 dark:text-emerald-400">
+                          {donation.remainingQuantity}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500 uppercase">
+                          {donation.unit}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-slate-500 text-[11px]">
-                      <span>Expires:</span>
-                      <span className="text-red-400 font-medium">{formatDate(donation.expiresAt)}</span>
+                    <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                      <span>Total: {donation.totalQuantity} {donation.unit}</span>
+                      <ExpiryUrgencyPill expiresAt={donation.expiresAt} />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-surface-border flex items-center justify-between gap-2 mt-4">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2 mt-4">
                   <button
                     type="button"
                     onClick={() => setInspectDonation(donation)}
                     className="btn-secondary text-xs py-1.5 px-2.5"
                   >
-                    <Eye size={14} /> Details
+                    <Eye size={13} /> View Details
                   </button>
 
                   {isEligible && (
@@ -184,7 +208,7 @@ export default function OrgDonationsPage() {
                       onClick={() => setAllocatingDonation(donation)}
                       className="btn-primary text-xs py-1.5 px-3"
                     >
-                      <ArrowUpRight size={14} /> Allocate
+                      <ArrowUpRight size={13} /> Allocate
                     </button>
                   )}
                 </div>

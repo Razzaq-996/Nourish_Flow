@@ -7,6 +7,8 @@ import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
 import Alert from '../../components/common/Alert';
 import EmptyState from '../../components/common/EmptyState';
+import IdChip from '../../components/common/IdChip';
+import { FoodCategoryIndicator } from '../../components/common/FoodTags';
 import FoodRequestDetailsModal from '../../components/requests/FoodRequestDetailsModal';
 
 export default function AdminRequestsPage() {
@@ -55,28 +57,28 @@ export default function AdminRequestsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="page-title">Platform Food Requests</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            System-wide overview of all food requests submitted by rescue organizations.
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            System-wide overview of all food requests submitted by verified rescue organizations.
           </p>
         </div>
       </div>
 
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
-      <div className="card p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="card p-3.5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search all platform requests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-9"
+            className="form-input pl-9 text-xs sm:text-sm"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-500 hidden sm:block" />
+          <Filter size={15} className="text-slate-400 hidden sm:block shrink-0" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -107,9 +109,9 @@ export default function AdminRequestsPage() {
             type="button"
             onClick={fetchRequests}
             title="Refresh"
-            className="btn-secondary px-3 py-2"
+            className="btn-secondary px-3 py-2 shrink-0"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -128,6 +130,7 @@ export default function AdminRequestsPage() {
                 <th>Fulfilled</th>
                 <th>Remaining</th>
                 <th>Status</th>
+                <th>Request ID</th>
                 <th>Needed By</th>
                 <th>Organization</th>
                 <th>Action</th>
@@ -135,25 +138,33 @@ export default function AdminRequestsPage() {
             </thead>
             <tbody>
               {filtered.map((r) => (
-                <tr key={r._id}>
-                  <td className="font-semibold text-slate-100">
-                    {r.foodCategory?.replace(/_/g, ' ')}
+                <tr key={r._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td>
+                    <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
+                      <FoodCategoryIndicator category={r.foodCategory} />
+                      <span>{r.foodCategory?.replace(/_/g, ' ')}</span>
+                    </div>
                   </td>
-                  <td>{r.totalQuantity} {r.unit}</td>
-                  <td className="text-blue-400">{r.fulfilledQuantity || 0}</td>
-                  <td className="text-brand-400 font-semibold">{r.remainingQuantity} {r.unit}</td>
+                  <td className="font-semibold text-slate-700 dark:text-slate-300">{r.totalQuantity} {r.unit}</td>
+                  <td className="text-blue-600 dark:text-blue-400 font-semibold">{r.fulfilledQuantity || 0}</td>
+                  <td className="text-emerald-700 dark:text-emerald-400 font-bold">{r.remainingQuantity} {r.unit}</td>
                   <td>
                     <Badge variant={requestStatusBadge(r.status)}>{r.status}</Badge>
                   </td>
-                  <td className="text-xs text-red-400">{formatDate(r.neededBy)}</td>
-                  <td className="font-mono text-xs text-slate-400">...{String(r.organizationId).slice(-6)}</td>
+                  <td>
+                    <IdChip id={r._id} prefix="REQ" />
+                  </td>
+                  <td className="text-xs text-red-600 dark:text-red-400 font-medium">{formatDate(r.neededBy)}</td>
+                  <td>
+                    <IdChip id={r.organizationId} prefix="ORG" />
+                  </td>
                   <td>
                     <button
                       type="button"
                       onClick={() => setSelectedRequest(r)}
-                      className="btn-secondary text-xs py-1 px-2.5"
+                      className="btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
                     >
-                      <Eye size={13} />
+                      <Eye size={13} /> View
                     </button>
                   </td>
                 </tr>
